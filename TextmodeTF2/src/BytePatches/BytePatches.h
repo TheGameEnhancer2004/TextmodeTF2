@@ -82,6 +82,12 @@ public:
 
 			// CTFPlayerInventory::SOUpdated (Prevent CCharacterInfoPanel::GetBackpackPanel call)
 			BytePatch("client.dll", "75 ? E8 ? ? ? ? 48 8B C8 48 8B 10 FF 52 ? 48 8B 53", 0x0, "EB"),
+
+			// CTFWinPanel::CTFWinPanel
+			BytePatch("client.dll", "57 48 83 EC ? 48 8B DA 48 8B F9 45 85 C0 74 ? 48 8D 05 ? ? ? ? 48 89 41 ? 45 33 C9 4C 8D 05 ? ? ? ? 33 D2 E8 ? ? ? ? 48 8B D3", 0x0, "C3"),
+
+			// CTFHudDeathNotice::CTFHudDeathNotice
+			BytePatch("client.dll", "55 48 8B EC 48 83 EC ? 48 8B F9 45 85 C0 74 ? 48 8D 05 ? ? ? ? 48 89 41 ? 45 33 C0 E8 ? ? ? ? 48 8D 05 ? ? ? ? 48 89 07 48 8D 35 ? ? ? ? 48 8D 05 ? ? ? ? 48 89 47", 0x0, "C3"),
 		}}
 	};
 };
