@@ -83,11 +83,14 @@ public:
 			// CTFPlayerInventory::SOUpdated (Prevent CCharacterInfoPanel::GetBackpackPanel call)
 			BytePatch("client.dll", "75 ? E8 ? ? ? ? 48 8B C8 48 8B 10 FF 52 ? 48 8B 53", 0x0, "EB"),
 
-			// CTFWinPanel::CTFWinPanel
-			BytePatch("client.dll", "57 48 83 EC ? 48 8B DA 48 8B F9 45 85 C0 74 ? 48 8D 05 ? ? ? ? 48 89 41 ? 45 33 C9 4C 8D 05 ? ? ? ? 33 D2 E8 ? ? ? ? 48 8B D3", 0x0, "C3"),
+			// Create_CTFWinPanel
+			BytePatch("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 33 D2 41 B8 ? ? ? ? 48 8B C8 48 8B D8 E8 ? ? ? ? 33 FF 48 85 DB 74 ? 44 8D 47 ? 48 8B CB 48 8D 15 ? ? ? ? E8 ? ? ? ? 48 8B C8 EB ? 48 8B CF 48 8B 5C 24 ? 48 8D 81 ? ? ? ? 48 85 C9 48 0F 44 C7 48 83 C4 ? 5F C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC 48 89 54 24", 0x0, "48 B8 00 00 00 00 00 00 00 00 48 83 C4 20 5F C3"),
 
-			// CTFHudDeathNotice::CTFHudDeathNotice
-			BytePatch("client.dll", "55 48 8B EC 48 83 EC ? 48 8B F9 45 85 C0 74 ? 48 8D 05 ? ? ? ? 48 89 41 ? 45 33 C0 E8 ? ? ? ? 48 8D 05 ? ? ? ? 48 89 07 48 8D 35 ? ? ? ? 48 8D 05 ? ? ? ? 48 89 47", 0x0, "C3"),
+			// Create_CTFHudDeathNotice
+			BytePatch("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 33 D2 41 B8 ? ? ? ? 48 8B C8 48 8B D8 E8 ? ? ? ? 48 85 DB 74 ? 41 B8 ? ? ? ? 48 8D 15 ? ? ? ? 48 8B CB 48 83 C4 ? 5B E9 ? ? ? ? 33 C0 48 83 C4 ? 5B C3 CC CC CC CC CC CC 40 53 48 83 EC ? B9 ? ? ? ? E8 ? ? ? ? 33 D2 41 B8 ? ? ? ? 48 8B C8 48 8B D8 E8 ? ? ? ? 48 85 DB 74 ? 41 B8 ? ? ? ? 48 8D 15 ? ? ? ? 48 8B CB 48 83 C4 ? 5B E9 ? ? ? ? 33 C0 48 83 C4 ? 5B C3 CC CC CC CC CC CC 48 8D 0D", 0x0, "EB 3A"),
+
+			// Create_CTFFreezePanel
+			BytePatch("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 33 D2 41 B8 ? ? ? ? 48 8B C8 48 8B D8 E8 ? ? ? ? 33 FF 48 85 DB 74 ? 44 8D 47 ? 48 8B CB 48 8D 15 ? ? ? ? E8 ? ? ? ? 48 8B C8 EB ? 48 8B CF 48 8B 5C 24 ? 48 8D 81 ? ? ? ? 48 85 C9 48 0F 44 C7 48 83 C4 ? 5F C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC 40 53 48 83 EC ? B9", 0x0, "48 B8 00 00 00 00 00 00 00 00 48 83 C4 20 5F C3"),
 		}}
 	};
 };
