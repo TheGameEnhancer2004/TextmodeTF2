@@ -48,16 +48,19 @@ public:
 			// CParticleSystemMgr::PrecacheParticleSystem
 			BytePatch("client.dll", "74 ? 53 48 83 EC ? 80 3A", 0x0, "C3"),
 			// CParticleProperty::Create
-			// no longer breaks amalgam since i made a textmode version of it
 			BytePatch("client.dll", "44 89 44 24 ? 53 55 56 57 41 54 41 56", 0x0, "31 C0 C3"),
 			// CViewRender::Render
 			BytePatch("client.dll", "48 89 50 ? 55 57 41 56", 0x0, "31 C0 C3"),
+
 			// This fixes the datacache.dll crash
 			BytePatch("client.dll", "4D 85 F6 0F 84 ? ? ? ? 49 8B CE E8 ? ? ? ? 83 F8", 0x0, "83 F6 00"),
 
 			// CCharacterInfoPanel::CCharacterInfoPanel (Prevent panel initializations)
 			BytePatch("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 48 85 C0 74 ? 41 B8 ? ? ? ? 48 8B D6 48 8B C8 E8 ? ? ? ? 48 8B C8 EB ? 48 8B CD 48 89 8E ? ? ? ? 48 8B D6 48 8B 01 FF 90 ? ? ? ? 48 8B 96 ? ? ? ? 4C 8D 05 ? ? ? ? 48 8B CE E8 ? ? ? ? B9", 0x0, "E9 B9 00"),
-			BytePatch("client.dll", "48 8B 8E ? ? ? ? 33 D2 48 8B 01 FF 90 ? ? ? ? 4C 8D 5C 24", 0x0, "EB 15"),
+			BytePatch("client.dll", "48 8B 8E ? ? ? ? 33 D2 48 8B 01 FF 90 ? ? ? ? 4C 8D 5C 24", 0x0, "EB 10"),	
+
+			// CStorePanel::RequestPricesheet (calls CCharacterInfoPanel::CreateStorePanel and runs CGCClientJobGetUserData)
+			BytePatch("client.dll", "40 57 48 83 EC ? E8 ? ? ? ? 48 8B C8", 0x0, "C3"),
 
 			// CCharacterInfoPanel::CreateStorePanel (Do nothing)
 			BytePatch("client.dll", "48 83 EC ? 48 8D 0D ? ? ? ? E8 ? ? ? ? 48 85 C0 74 ? 48 8D 0D ? ? ? ? E8 ? ? ? ? 48 8B C8 48 8B 10 FF 92 ? ? ? ? E8", 0x0, "5B C3 CC"),
@@ -91,6 +94,9 @@ public:
 
 			// Create_CTFFreezePanel
 			BytePatch("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 33 D2 41 B8 ? ? ? ? 48 8B C8 48 8B D8 E8 ? ? ? ? 33 FF 48 85 DB 74 ? 44 8D 47 ? 48 8B CB 48 8D 15 ? ? ? ? E8 ? ? ? ? 48 8B C8 EB ? 48 8B CF 48 8B 5C 24 ? 48 8D 81 ? ? ? ? 48 85 C9 48 0F 44 C7 48 83 C4 ? 5F C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC 40 53 48 83 EC ? B9", 0x0, "48 B8 00 00 00 00 00 00 00 00 48 83 C4 20 5F C3"),
+
+			// CBaseHudChat::ChatPrintf
+			BytePatch("client.dll", "4C 89 4C 24 ? 48 89 4C 24 ? 55 53", 0x0, "C3"),
 		}}
 	};
 };
