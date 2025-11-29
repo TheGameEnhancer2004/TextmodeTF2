@@ -3,6 +3,6 @@
 
 namespace CrashLog
 {
-	void Initialize();
+	void Initialize(LPVOID lpParam);
 	void Unload();
 }

@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <cstdint>
 #include <vector>
+#include <string>
 
 class CMemory
 {
@@ -11,6 +12,10 @@ public:
 	std::vector<int> PatternToInt(const char* szPattern);
 	uintptr_t FindSignature(const char* szModule, const char* szPattern);
 	PVOID FindInterface(const char* szModule, const char* szObject);
+	std::string GetModuleOffset(void* pAddress) { return GetModuleOffset(uintptr_t(pAddress)); };
+	std::string GetModuleOffset(uintptr_t uAddress);
+	uintptr_t GetOffsetFromBase(void* pAddress) { return GetOffsetFromBase(uintptr_t(pAddress)); };
+	uintptr_t GetOffsetFromBase(uintptr_t uAddress);
 
 	inline void* GetVFunc(void* instance, size_t index)
 	{
