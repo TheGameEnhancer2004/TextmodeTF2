@@ -1,4 +1,5 @@
 #include "Interfaces.h"
+#include "../../SDK/SDK.h"
 #include "../Memory/Memory.h"
 #include "../../Core/Core.h"
 #include "../Assert/Assert.h"
@@ -84,12 +85,22 @@ bool CInterfaces::Initialize()
 			Interface->m_pszDLLName = SearchForDLL(Interface->m_pszDLLName);
 
 		if (Interface->m_nOffset == -1)
+		{
 			*Interface->m_pPtr = U::Memory.FindInterface(Interface->m_pszDLLName, Interface->m_pszVersion);
+			if (!*Interface->m_pPtr)
+			{
+				SDK::Output("Interfaces", std::format("Failed to find interface: {} in {}", Interface->m_pszVersion, Interface->m_pszDLLName).c_str());
+				bFail = true;
+				continue;
+			}
+			SDK::Output("Interfaces", std::format("Successfully found interface: {} in {}", Interface->m_pszVersion, Interface->m_pszDLLName).c_str());
+		}
 		else
 		{
 			auto dwDest = U::Memory.FindSignature(Interface->m_pszDLLName, Interface->m_pszVersion);
 			if (!dwDest)
 			{
+				SDK::Output("Interfaces", std::format("Failed to find signature for interface: {} in {}", Interface->m_pszVersion, Interface->m_pszDLLName).c_str());
 				U::Core.AppendFailText(std::format("CInterfaces::Initialize() failed to find signature:\n  {}\n  {}", Interface->m_pszDLLName, Interface->m_pszVersion).c_str());
 				bFail = true;
 				continue;
@@ -100,19 +111,18 @@ bool CInterfaces::Initialize()
 
 			for (int n = 0; n < Interface->m_nDereferenceCount; n++)
 			{
-				if (Interface->m_pPtr)
+				if (*Interface->m_pPtr)
 					*Interface->m_pPtr = *reinterpret_cast<void**>(*Interface->m_pPtr);
 			}
-		}
 
-		if (!*Interface->m_pPtr)
-		{
-			U::Core.AppendFailText(std::format("CInterfaces::Initialize() failed to initialize:\n  {}\n  {}", Interface->m_pszDLLName, Interface->m_pszVersion).c_str());
-			bFail = true;
-			continue;
+			if (!*Interface->m_pPtr)
+			{
+				SDK::Output("Interfaces", std::format("Failed to resolve interface address: {} in {}", Interface->m_pszVersion, Interface->m_pszDLLName).c_str());
+				bFail = true;
+				continue;
+			}
+			SDK::Output("Interfaces", std::format("Successfully found interface (via signature): {} in {}", Interface->m_pszVersion, Interface->m_pszDLLName).c_str());
 		}
-		U::Core.AppendSuccessText("Interfaces", std::format("Successfully initialized: {}, {}", Interface->m_pszDLLName, Interface->m_pszVersion).c_str());
 	}
-
 	return !bFail;
 }

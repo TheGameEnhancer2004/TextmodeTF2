@@ -2,15 +2,35 @@
 
 void SDK::Output(const char* cFunction, const char* cLog, bool bLogFile, int iMessageBox)
 {
+#ifdef _DEBUG
+	if (!GetConsoleWindow())
+	{
+		AllocConsole();
+		FILE* pFile;
+		freopen_s(&pFile, "CONOUT$", "w", stdout);
+	}
+#endif
+
 	if (cLog)
 	{
+		std::string sLog = std::format("[{}] {}", cFunction, cLog);
+#ifdef _DEBUG
+		printf("%s\n", sLog.c_str());
+		fflush(stdout);
+#endif
+
 		if (bLogFile)
-			OutputFile(TEXTMODE_LOG_FILE, std::format("[{}] {}\n", cFunction, cLog).c_str());
+			OutputFile(TEXTMODE_LOG_FILE, (sLog + "\n").c_str());
 		if (iMessageBox != -1)
 			MessageBox(nullptr, cLog, cFunction, iMessageBox);
 	}
 	else
 	{
+#ifdef _DEBUG
+		printf("%s\n", cFunction);
+		fflush(stdout);
+#endif
+
 		if (bLogFile)
 			OutputFile(TEXTMODE_LOG_FILE, std::format("{}\n", cFunction).c_str());
 		if (iMessageBox != -1)
@@ -20,14 +40,36 @@ void SDK::Output(const char* cFunction, const char* cLog, bool bLogFile, int iMe
 
 void SDK::OutputFile(const char* cOutputFileName, const char* cMsg)
 {
-	if (G::AppdataPath.empty())
-		return;
+	std::string sPath = G::AppdataPath.empty() ? G::CurrentPath + "\\" : G::AppdataPath;
+	if (sPath == "\\" || sPath.empty())
+	{
+		char szPath[MAX_PATH];
+		if (GetModuleFileNameA(NULL, szPath, MAX_PATH))
+		{
+			std::string sModulePath(szPath);
+			sPath = sModulePath.substr(0, sModulePath.find_last_of("\\/")) + "\\";
+		}
+	}
+
 	try
 	{
 		std::ofstream file;
-		file.open(G::AppdataPath + cOutputFileName, std::ios::app);
-		file << cMsg;
-		file.close();
+		file.open(sPath + cOutputFileName, std::ios::app);
+		if (file.is_open())
+		{
+			file << cMsg;
+			file.flush();
+			file.close();
+		}
+		
+		if (!file.is_open()) {
+			std::ofstream backupFile;
+			backupFile.open("C:\\TextmodeLog_Backup.log", std::ios::app);
+			if (backupFile.is_open()) {
+				backupFile << cMsg;
+				backupFile.close();
+			}
+		}
 	}
 	catch (...) {}
 }
@@ -38,7 +80,11 @@ bool SDK::BlacklistFile(const char* cFileName)
 		".ani", ".wav", ".mp3", ".vvd", ".vtx", ".vtf", ".vfe", ".cache",
 		".jpg", ".png", ".tga", ".dds",  // Texture files we dont need in textmode
 		".phy",  // Physics
-		".dem"   // Demo and log files
+		".dem",  // Demo and log files
+		".vcd",  // Scene files
+		".ain",  // AI node graph
+		".lst",  // Manifests
+		".pcf"   // Particle systems
 	};
 
 	if (!cFileName || !std::strncmp(cFileName, "materials/console/", 18))
@@ -54,6 +100,10 @@ bool SDK::BlacklistFile(const char* cFileName)
 
 	// NEVER block .bsp files - they are essential for map loading
 	if (!std::strcmp(ext_p, ".bsp"))
+		return false;
+
+	// NEVER block .nav files - navengine needs it obviosuly lol
+	if (!std::strcmp(ext_p, ".nav"))
 		return false;
 
 	// Block all particle effects during map load
@@ -76,6 +126,15 @@ bool SDK::BlacklistFile(const char* cFileName)
 	if (std::strstr(cFileName, "ambient"))
 		return true;
 
+	// Block models that aren't players or essential gameplay items
+	if (!std::strcmp(ext_p, ".mdl"))
+	{
+		if (std::strstr(cFileName, "player/") || std::strstr(cFileName, "buildables/") || std::strstr(cFileName, "weapons/") || std::strstr(cFileName, "empty.mdl") || std::strstr(cFileName, "error.mdl"))
+			return false;
+
+		return true;
+	}
+
 	if (!std::strcmp(ext_p, ".vmt"))
 	{
 		// Only allow essential UI materials
@@ -95,8 +154,6 @@ bool SDK::BlacklistFile(const char* cFileName)
 	if (std::strstr(cFileName, "sound.cache") || std::strstr(cFileName, "tf2_sound") || std::strstr(cFileName, "game_sounds"))
 		return false;
 	if (!std::strncmp(cFileName, "sound/player/footsteps", 22))
-		return false;
-	if (!std::strcmp(ext_p, ".mdl"))
 		return false;
 	if (!std::strncmp(cFileName, "/decal", 6))
 		return true;

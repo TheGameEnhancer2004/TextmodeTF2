@@ -1,4 +1,5 @@
 #include "Hooks.h"
+#include "../../SDK/SDK.h"
 
 #include "../Assert/Assert.h"
 #include "../../Core/Core.h"
@@ -19,7 +20,18 @@ bool CHooks::Initialize(const char* sName)
 	}
 
 	auto pHook = m_mHooks[sName];
+	if (!pHook)
+	{
+		SDK::Output("Hooks", std::format("Failed to find hook: {}", sName).c_str());
+		return false;
+	}
+
 	bool bFail{!reinterpret_cast<bool(__cdecl*)()>(pHook->m_pInitFunc)()};
+	if (bFail)
+	{
+		SDK::Output("Hooks", std::format("Failed to initialize hook (InitFunc): {}", sName).c_str());
+		return false;
+	}
 
 	bFail = MH_EnableHook(pHook->m_pTarget) != MH_OK;
 	if (bFail)

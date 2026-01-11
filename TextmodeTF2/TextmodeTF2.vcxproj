@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -226,11 +226,20 @@
     <ClCompile Include="src\Core\Core.cpp" />
     <ClCompile Include="src\DllMain.cpp" />
     <ClCompile Include="src\Hooks\Con_DebugLog.cpp" />
+    <ClCompile Include="src\Hooks\CDebugOverlay_AddBoxOverlay.cpp" />
+    <ClCompile Include="src\Hooks\CDebugOverlay_AddLineOverlay.cpp" />
+    <ClCompile Include="src\Hooks\CModelLoader_GetModelForName.cpp" />
+    <ClCompile Include="src\Hooks\CModelRender_DrawModelExecute.cpp" />
+    <ClCompile Include="src\Hooks\CParticleCollection_Simulate.cpp" />
+    <ClCompile Include="src\Hooks\CParticleSystemMgr_DrawRenderCache.cpp" />
+    <ClCompile Include="src\Hooks\CStaticPropMgr_DrawStaticProps.cpp" />
+    <ClCompile Include="src\Hooks\CStaticPropMgr_UnserializeStaticProps.cpp" />
     <ClCompile Include="src\Hooks\CVideoModeCommon_SetupStartupGraphic.cpp" />
     <ClCompile Include="src\Hooks\Host_IsSecureServerAllowed.cpp" />
     <ClCompile Include="src\Hooks\IBaseFileSystem_Hooks.cpp" />
     <ClCompile Include="src\Hooks\IFileSystem_Hooks.cpp" />
     <ClCompile Include="src\Hooks\IMaterialSystem_Hooks.cpp" />
+    <ClCompile Include="src\Hooks\S_PrecacheSound.cpp" />
     <ClCompile Include="src\SDK\SDK.cpp" />
     <ClCompile Include="src\Utils\CrashLog\CrashLog.cpp" />
     <ClCompile Include="src\Utils\Hooks\Hooks.cpp" />

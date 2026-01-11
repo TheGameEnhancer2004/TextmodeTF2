@@ -30,6 +30,7 @@ bool BytePatch::Initialize()
 	m_pAddress = LPVOID(U::Memory.FindSignature(m_sModule, m_sSignature));
 	if (!m_pAddress)
 	{
+		SDK::Output("BytePatches", std::format("Failed to find signature for bytepatch: {} in {}", m_sSignature, m_sModule).c_str());
 		U::Core.AppendFailText(std::format("BytePatch::Initialize() failed to initialize:\n  {}\n  {}", m_sModule, m_sSignature).c_str());
 		return false;
 	}
@@ -43,7 +44,8 @@ bool BytePatch::Initialize()
 
 	Write(m_vPatch);
 
-	U::Core.AppendSuccessText("BytePatches", std::format("Successfully patched {:#x} ('{}', '{}')!", uintptr_t(m_pAddress) + m_iOffset, m_sModule, m_sSignature).c_str());
+	SDK::Output("BytePatches", std::format("Successfully patched {:#x} ('{}', '{}')!", uintptr_t(m_pAddress), m_sModule, m_sSignature).c_str());
+	U::Core.AppendSuccessText("BytePatches", std::format("Successfully patched {:#x} ('{}', '{}')!", uintptr_t(m_pAddress), m_sModule, m_sSignature).c_str());
 	return m_bIsPatched = true;
 }
 

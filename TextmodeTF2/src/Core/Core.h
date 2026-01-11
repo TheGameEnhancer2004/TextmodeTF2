@@ -17,12 +17,13 @@ public:
 	bool m_bUnload = false;
 	bool m_bTimeout = false;
 private:
-	bool m_bFilesystemLoaded = false, m_bEngineLoaded = false, m_bMatSysLoaded = false, m_bClientLoaded = false;
+	bool m_bFilesystemLoaded = false, m_bEngineLoaded = false, m_bMatSysLoaded = false, m_bClientLoaded = false, m_bParticlesLoaded = false;
 
 	int LoadFilesystem();
 	int LoadEngine();
 	int LoadMatSys();
 	int LoadClient();
+	int LoadParticles();
 
 	std::stringstream ssFailStream;
 };
