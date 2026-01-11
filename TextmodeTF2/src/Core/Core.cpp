@@ -8,8 +8,6 @@
 #define LOAD_FAIL -1
 #define CHECK(x, sFailMessage) if (x == LOAD_FAIL) {m_bUnload = true; SDK::Output("TextmodeTF2", sFailMessage); return;}
 
-// TODO: null subsystems (Particle, Material, Model partially, Sound and etc.)
-
 void CCore::AppendFailText(const char* sMessage, bool bCritical)
 {
 	if (!m_bTimeout && !bCritical)
