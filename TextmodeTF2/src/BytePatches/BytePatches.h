@@ -131,6 +131,11 @@ public:
 
 			// CBaseHudChat::ChatPrintf
 			BytePatch("client.dll", "4C 89 4C 24 ? 48 89 4C 24 ? 55 53", 0x0, "C3"),
+		}},
+		{"datacache",
+		{
+			// CDataCacheSection::Unlock (sub_18000F280)
+			BytePatch("datacache.dll", "48 89 5C 24 18 48 89 7C 24 20 41 56 48 83 EC 20 F6 81 E0 00 00 00 04", 0x41, "90 90 90 90 90"),
 		}}
 	};
 };
