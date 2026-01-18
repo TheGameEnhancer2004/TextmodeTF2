@@ -195,8 +195,6 @@ int CCore::LoadMDLCache()
 	if (!G::IMDLCache)
 		return LOAD_WAIT;
 
-	U::BytePatches.Initialize("datacache");
-
 	if (!U::Hooks.Initialize("IMDLCache_ProcessDataIntoCache"))
 		return LOAD_FAIL;
 
