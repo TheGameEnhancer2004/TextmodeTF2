@@ -180,13 +180,13 @@ static LONG APIENTRY ExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 	try
 	{
 		std::ofstream file;
-		file.open(G::CurrentPath + "\\crash_log.txt", std::ios_base::app);
+		file.open("crash_log.txt", std::ios_base::app);
 		file << ssErrorStream.str() + "\n\n\n";
 		file.close();
 
 		ssErrorStream << "\n";
 		ssErrorStream << "Ctrl + C to copy. \n";
-		ssErrorStream << "Logged to TextmodeTF2\\crash_log.txt. ";
+		ssErrorStream << "Logged to crash_log.txt. ";
 	}
 	catch (...) {}
 

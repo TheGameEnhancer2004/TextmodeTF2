@@ -17,7 +17,7 @@ public:
 	bool m_bUnload = false;
 	bool m_bTimeout = false;
 private:
-	bool m_bFilesystemLoaded = false, m_bEngineLoaded = false, m_bMatSysLoaded = false, m_bClientLoaded = false, m_bParticlesLoaded = false, m_bMDLCacheLoaded = false;
+	bool m_bFilesystemLoaded = false, m_bEngineLoaded = false, m_bMatSysLoaded = false, m_bClientLoaded = false, m_bParticlesLoaded = false, m_bMDLCacheLoaded = false, m_bStudioRenderLoaded = false, m_bShaderAPILoaded = false, m_bVGuiMatSurfaceLoaded = false;
 
 	int LoadFilesystem();
 	int LoadEngine();
@@ -25,6 +25,8 @@ private:
 	int LoadClient();
 	int LoadParticles();
 	int LoadMDLCache();
+	int LoadStudioRender();
+	int LoadVGuiMatSurface();
 
 	std::stringstream ssFailStream;
 };
