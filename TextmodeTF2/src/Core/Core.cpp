@@ -203,6 +203,28 @@ int CCore::LoadMDLCache()
 	return m_bMDLCacheLoaded = true;
 }
 
+int CCore::LoadStudioRender()
+{
+	if (!GetModuleHandleA("studiorender.dll"))
+		return LOAD_WAIT;
+
+	if (!U::BytePatches.Initialize("studiorender"))
+		return LOAD_WAIT;
+
+	return m_bStudioRenderLoaded = true;
+}
+
+int CCore::LoadVGuiMatSurface()
+{
+	if (!GetModuleHandleA("vguimatsurface.dll"))
+		return LOAD_WAIT;
+
+	if (!U::BytePatches.Initialize("vguimatsurface"))
+		return LOAD_WAIT;
+
+	return m_bVGuiMatSurfaceLoaded = true;
+}
+
 void CCore::Load()
 {
 	G::CurrentPath = std::filesystem::current_path().string() + "\\TextmodeTF2";
@@ -239,7 +261,8 @@ void CCore::Load()
 		m_bTimeout = GetModuleHandleA("filesystem_stdio.dll") &&
 			GetModuleHandleA("engine.dll") &&
 			GetModuleHandleA("materialsystem.dll") &&
-			GetModuleHandleA("client.dll");
+			GetModuleHandleA("client.dll") &&
+			GetModuleHandleA("studiorender.dll");
 
 		int iFilesystem = m_bFilesystemLoaded ? 1 : LoadFilesystem();
 		CHECK(iFilesystem, "Failed to load file system")
@@ -255,8 +278,25 @@ void CCore::Load()
 
 		int iMDLCache = m_bMDLCacheLoaded ? 1 : LoadMDLCache();
 		CHECK(iMDLCache, "Failed to load MDL cache")
+
+		int iStudioRender = m_bStudioRenderLoaded ? 1 : LoadStudioRender();
+		CHECK(iStudioRender, "Failed to load Studio Render")
+
+		int iVGuiMatSurface = m_bVGuiMatSurfaceLoaded ? 1 : LoadVGuiMatSurface();
+		CHECK(iVGuiMatSurface, "Failed to load VGUI Mat Surface")
+
+		if (!m_bShaderAPILoaded)
+		{
+			if (GetModuleHandleA("shaderapidx9.dll"))
+			{
+				if (U::BytePatches.Initialize("shaderapidx9"))
+					m_bShaderAPILoaded = true;
+			}
+			else if (m_bTimeout)
+				m_bShaderAPILoaded = true;
+		}
 	}
-	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded);
+	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded || !m_bStudioRenderLoaded || !m_bShaderAPILoaded || !m_bVGuiMatSurfaceLoaded);
 
 	SDK::Output("TextmodeTF2", std::format("Loaded in {} seconds", SDK::PlatFloatTime()).c_str());
 }

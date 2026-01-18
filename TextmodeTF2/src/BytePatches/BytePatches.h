@@ -148,7 +148,62 @@ public:
 		{
 			// CDataCacheSection::Unlock CRASHFIX!
 			BytePatch("datacache.dll", "48 89 5C 24 18 48 89 7C 24 20 41 56 48 83 EC 20 F6 81 E0 00 00 00 04", 0x41, "90 90 90 90 90"),
-		}}
+		}},
+		{"studiorender",
+		{
+			// CStudioRender::DrawModelArray
+			BytePatch("studiorender.dll", "40 53 48 83 EC 20 48 8D 05 ? ? ? ? 48 8B D9", 0x0, "C3"),
+
+			// CStudioRenderContext::AddShadows
+			BytePatch("studiorender.dll", "40 53 56 57 41 55 41 57 48 83 EC 30 48 8B 0D ? ? ? ?", 0x0, "C3"),
+
+			// CStudioRenderContext (model rendering setup)
+			BytePatch("studiorender.dll", "4C 89 4C 24 20 48 89 4C 24 08 56 41 54 41 55 41 56 41 57 48 83 EC 70", 0x0, "C3"),
+
+			// CStudioRenderContext (another model rendering path)
+			BytePatch("studiorender.dll", "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 44 89 4C 24 20 57 41 56 41 57 48 83 EC 40", 0x0, "C3"),
+
+			// Disables bone setup only needed for drawing
+			BytePatch("studiorender.dll", "4C 89 44 24 18 48 89 54 24 10 48 89 4C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 81 EC D0 00 00", 0x0, "31 C0 C3"),
+		}},
+		{"vguimatsurface",
+		{
+			// PaintTraverse
+			BytePatch("vguimatsurface.dll", "40 57 48 83 EC 30 80 A1 ? ? ? ? 9F 48 8B F9", 0x0, "C3"),
+
+			// DrawPrintText
+			BytePatch("vguimatsurface.dll", "44 89 4C 24 20 48 89 54 24 10 55 56 57 41 54 41 55 41 56 41 57 48 81 EC C0 00 00 00", 0x0, "C3"),
+
+			// AddGlyphToCache
+          	BytePatch("vguimatsurface.dll", "4C 89 4C 24 20 89 54 24 10 55 56 57 41 54 41 55 41 56 41 57 48 81 EC E0 00 00 00", 0x0, "31 C0 C3"),
+
+          	// FlushText
+          	BytePatch("vguimatsurface.dll", "40 53 48 83 EC 30 83 B9 A8 03 01 00 00 48 8B D9", 0x0, "C3"),
+        }},
+		// if something will start to crash i blame this at the first
+		{"shaderapidx9",
+		{
+			// Present
+			BytePatch("shaderapidx9.dll", "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57", 0x0, "C3"),
+
+			// CreateTextures
+			BytePatch("shaderapidx9.dll", "44 89 4C 24 20 44 89 44 24 18 48 89 54 24 10 55", 0x0, "31 C0 C3"),
+
+			// ModifyTexture
+			BytePatch("shaderapidx9.dll", "4C 8B DC 49 89 5B 10 57 48 83 EC 50 48 8B 05", 0x0, "C3"),
+
+			// CreateTextureHandles
+			BytePatch("shaderapidx9.dll", "4C 8B DC 56 41 55 48 81 EC 98 00 00 00 48 8B 05", 0x0, "C3"),
+
+			// TexLock
+			BytePatch("shaderapidx9.dll", "4C 8B DC 49 89 5B 10 49 89 6B 18 56 57 41 54 41", 0x0, "31 C0 C3"),
+
+			// TexUnlock
+			BytePatch("shaderapidx9.dll", "4C 8B DC 49 89 5B 10 49 89 73 18 57 48 83 EC 50", 0x0, "C3"),
+
+			// CrashFix
+			BytePatch("shaderapidx9.dll", "40 53 55 57 41 56 41 57 48 83 EC 50 48 8B 81", 0x0, "C3"),
+		}},
 	};
 };
 
