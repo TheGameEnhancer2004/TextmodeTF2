@@ -42,14 +42,15 @@ public:
 			BytePatch("engine.dll", "74 ? 48 8D 54 24 ? 48 8D 0D ? ? ? ? E8 ? ? ? ? 38 1D", 0x0, "90 90"),
 
 			// CVideoModeCommon::UpdateWindow 
-			// Prevents crash during window update in textmode 
-			BytePatch("engine.dll", "E8 ? ? ? ? EB ? B1 ?", 0x0, "C3"),
+			// Prevents crash during window update in textmode by skipping one callsite safely.
+			BytePatch("engine.dll", "E8 ? ? ? ? EB ? B1 ?", 0x0, "90 90 90 90 90"),
 
 			// Fixes crash in engine.dll (CVideoModeCommon::GetModeCount or similar) 
 			BytePatch("engine.dll", "8B 44 D0 ? C3 CC", 0x0, "31 C0 C3 90 90 90"),
 
 			// S_Init 
-			BytePatch("engine.dll", "45 33 C0 48 8D 15 ? ? ? ? 48 8B C8 4C 8B 08 41 FF 51 18 48 85 C0 74", 0x17, "90 90"),
+			// Signature intentionally anchored through the -nosound branch to avoid multi-hit false matches.
+			BytePatch("engine.dll", "45 33 C0 48 8D 15 ? ? ? ? 48 8B C8 4C 8B 08 41 FF 51 18 48 85 C0 74 ? E8 ? ? ? ? 45 33 C0 48 89 05 ? ? ? ? 48 8D 15", 0x17, "90 90"),
 
 			// Hard bypass for fps_max 30 limit in sub_18020CB60 (engine.dll+0x20CC0C) 
 			// Matches: F3 0F 10 40 54 0F 2F 05 ?? ?? ?? ?? 73 ?? 
@@ -60,7 +61,7 @@ public:
 
 			// Mod_LoadLighting
 			// nulls out lighting data loading for maps
-			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18 48 8B 05 ? ? ? ? 48 C7 80 20 01 00 00 00 00 00 00", 0x0, "C3"),
+			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18 48 8B 05 ? ? ? ? 48 C7 80 20 01 00 00 00 00 00 00", 0x0, "31 C0 C3"),
 			
 			// Sprite_LoadModel
 			// nulls out sprite model loading
@@ -68,7 +69,7 @@ public:
 
 			// Mod_LoadWorldlights
 			// nulls out world light loading
-			BytePatch("engine.dll", "40 56 41 56 41 57 48 83 EC 50 4C 8B 05 ? ? ? ? 33 F6 44 0F B6 FA 4C 8B F1 49 89 B0 38 01 00 00 48 63 01 85 C0 75 18", 0x0, "C3"),
+			BytePatch("engine.dll", "40 56 41 56 41 57 48 83 EC 50 4C 8B 05 ? ? ? ? 33 F6 44 0F B6 FA 4C 8B F1 49 89 B0 38 01 00 00 48 63 01 85 C0 75 18", 0x0, "31 C0 C3"),
 
 			// Mod_LoadTexinfo
 			// forces mat_loadtextures 0 logic to skip material loading

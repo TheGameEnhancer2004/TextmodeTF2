@@ -52,29 +52,43 @@ std::vector<int> CMemory::PatternToInt(const char* szPattern)
 
 uintptr_t CMemory::FindSignature(const char* szModule, const char* szPattern)
 {
+	const auto vMatches = FindSignatures(szModule, szPattern, 1);
+	if (!vMatches.empty())
+		return vMatches[0];
+
+	return 0x0;
+}
+
+std::vector<uintptr_t> CMemory::FindSignatures(const char* szModule, const char* szPattern, size_t nMaxMatches)
+{
+	std::vector<uintptr_t> vMatches = {};
+
 	if (const auto hMod = GetModuleHandleA(szModule))
 	{
 		// Get module information to search in the given module
 		MODULEINFO module_info;
 		if (!GetModuleInformation(GetCurrentProcess(), hMod, &module_info, sizeof(MODULEINFO)))
-			return {};
+			return vMatches;
 
 		// The region where we will search for the byte sequence
 		const auto image_size = module_info.SizeOfImage;
 
 		// Check if the image is faulty
 		if (!image_size)
-			return {};
+			return vMatches;
 
 		// Convert IDA-Style signature to a byte sequence
 		const auto pattern_bytes = PatternToInt(szPattern);
 		const auto signature_size = pattern_bytes.size();
+		if (!signature_size || signature_size > image_size)
+			return vMatches;
+
 		const int* signature_bytes = pattern_bytes.data();
 
 		const auto image_bytes = reinterpret_cast<byte*>(hMod);
 
 		// Now loop through all bytes and check if the byte sequence matches
-		for (auto i = 0ul; i < image_size - signature_size; ++i)
+		for (auto i = 0ul; i <= image_size - signature_size; ++i)
 		{
 			auto byte_sequence_found = true;
 
@@ -90,13 +104,15 @@ uintptr_t CMemory::FindSignature(const char* szModule, const char* szPattern)
 			}
 
 			if (byte_sequence_found)
-				return { reinterpret_cast<uintptr_t>(&image_bytes[i]) };
+			{
+				vMatches.push_back(reinterpret_cast<uintptr_t>(&image_bytes[i]));
+				if (nMaxMatches && vMatches.size() >= nMaxMatches)
+					break;
+			}
 		}
-
-		return {};
 	}
 
-	return 0x0;
+	return vMatches;
 }
 
 using CreateInterfaceFn = void* (*)(const char* pName, int* pReturnCode);
