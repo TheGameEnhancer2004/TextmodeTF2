@@ -57,6 +57,45 @@ public:
 			// We patch the 'jnb' (73) to 'jmp' (EB) to skip the 30fps clamp 
 			BytePatch("engine.dll", "F3 0F 10 40 54 0F 2F 05 ?? ?? ?? ?? 73 ??", 0xC, "EB"),
 
+			// SCR_UpdateScreen
+			BytePatch("engine.dll", "40 55 41 54 41 56 41 57 48 8D 6C 24 ? 48 81 EC 88 00 00 00 48 8B 05 ? ? ? ? 45 33 E4 4C 89 65 ? 45 8B FC", 0x0, "31 C0 C3"),
+
+			// CEngineVGui::Simulate
+			BytePatch("engine.dll", "41 57 48 81 EC A0 00 00 00 4C 8B F9 48 8B 0D ? ? ? ? 48 8B 01 FF 90 20 01 00 00 49 83 BF B8 00 00 00 00", 0x0, "31 C0 C3"),
+
+			// CL_DecayLights
+			BytePatch("engine.dll", "48 83 EC 48 0F 29 74 24 30 48 8D 0D ? ? ? ? 0F 29 7C 24 20 E8 ? ? ? ? 0F 28 F8 0F 57 F6 0F 2F FE 0F 86 ? ? ? ?", 0x0, "C3"),
+
+			// _Host_RunFrame -> _Host_RunFrame_Render callsite
+			BytePatch("engine.dll", "45 84 E4 0F 84 ? ? ? ? E8 ? ? ? ? 48 8B 05 ? ? ? ? 4C 8D 25 ? ? ? ? 4C 89 7D ? 48 8D 15", 0x9, "90 90 90 90 90"),
+
+			// _Host_RunFrame_Sound callsite
+			BytePatch("engine.dll", "83 3D ? ? ? ? 06 F2 0F 11 05 ? ? ? ? 75 09 48 8D 0D ? ? ? ? EB 02 33 C9 E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 10 0D", 0x1C, "90 90 90 90 90"),
+
+			// _Host_RunFrame_Client voice gate callsite
+			BytePatch("engine.dll", "F3 0F 10 05 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 0F 57 C0 C6 44 24 ? 01", 0xD, "31 C0 90 90 90"),
+
+			// _Host_RunFrame_Input -> ClientDLL_ProcessInput callsite
+			BytePatch("engine.dll", "FF 15 ? ? ? ? F2 0F 11 05 ? ? ? ? E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 11 05 ? ? ? ? E8 ? ? ? ?", 0xE, "90 90 90 90 90"),
+
+			// _Host_RunFrame non-threaded path -> CL_RunPrediction(PREDICTION_NORMAL)
+			BytePatch("engine.dll", "48 8B 01 FF 50 18 B9 01 00 00 00 E8 ? ? ? ? E8 ? ? ? ? F3 0F 10 05 ? ? ? ? E8 ? ? ? ? 48 85 F6 74 ? 45 33 C9", 0xB, "90 90 90 90 90"),
+
+			// _Host_RunFrame threaded path -> CL_RunPrediction(PREDICTION_NORMAL)
+			BytePatch("engine.dll", "B9 01 00 00 00 F3 0F 10 05 ? ? ? ? F3 0F 5E 05 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 48 8D 0D ? ? ? ? C6 05", 0x1D, "90 90 90 90 90"),
+
+			// _Host_RunFrame non-threaded path -> CL_ExtraMouseUpdate
+			BytePatch("engine.dll", "F3 0F 10 05 ? ? ? ? E8 ? ? ? ? 48 85 F6 74 ? 45 33 C9 44 89 7C 24 20 45 33 C0 48 8B D3 48 8B CE FF 96 A8 00 00 00", 0x8, "90 90 90 90 90"),
+
+			// _Host_RunFrame threaded path -> CL_ExtraMouseUpdate
+			BytePatch("engine.dll", "E8 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? F2 0F 10 05 ? ? ? ? 66 0F 5A C0 44 89 35 ? ? ? ? 89 35 ? ? ? ? F3 0F 11 05", 0xD, "90 90 90 90 90"),
+
+			// _Host_RunFrame fallback sleep path
+			BytePatch("engine.dll", "48 8B 05 ? ? ? ? 8B 48 58 E8 ? ? ? ? 8B 0D ? ? ? ? 85 C9 74 05 E8 ? ? ? ? E8", 0xF, "B9 01 00 00 00 90"),
+
+			// _Host_RunFrame tick loop -> toolframework->Think callsite
+			BytePatch("engine.dll", "40 38 3D ? ? ? ? 75 08 0F B6 CB E8 ? ? ? ? 48 8B 0D ? ? ? ? 0F B6 D3 48 8B 01 FF 90 D8 00 00 00 F2 0F 10 0D ? ? ? ?", 0x1E, "90 90 90 90 90 90"),
+
 			// evil cathook's plan b implementation
 
 			// Mod_LoadLighting
@@ -98,6 +137,15 @@ public:
 			BytePatch("client.dll", "44 89 44 24 ? 53 55 56 57 41 54 41 56", 0x0, "31 C0 C3"),
 			// CViewRender::Render
 			BytePatch("client.dll", "48 89 50 ? 55 57 41 56", 0x0, "31 C0 C3"),
+
+			// CHLClient::HudUpdate -> GetClientVoiceMgr()->Frame(frametime)
+			BytePatch("client.dll", "E8 ? ? ? ? 48 8B C8 0F 28 CE E8 ? ? ? ? 0F B6 D3 48 8D 0D ? ? ? ? E8 ? ? ? ?", 0xB, "90 90 90 90 90"),
+
+			// CHLClient::HudUpdate -> vgui::GetAnimationController()->UpdateAnimations(engine->Time())
+			BytePatch("client.dll", "48 8B 0D ? ? ? ? 48 8B 01 FF 50 70 0F 28 F0 E8 ? ? ? ? 48 8B C8 0F 28 CE E8 ? ? ? ? 48 8B 05 ? ? ? ?", 0x1B, "90 90 90 90 90"),
+
+			// CHLClient::HudUpdate -> C_BaseTempEntity::CheckDynamicTempEnts
+			BytePatch("client.dll", "48 8B 0D ? ? ? ? 48 8D 15 ? ? ? ? 4C 8B C0 FF 13 E8 ? ? ? ? 48 8B 0D ? ? ? ? 48 8B 01 FF 90 D8 00 00 00", 0x13, "90 90 90 90 90"),
 
 			// This fixes the datacache.dll crash
 			BytePatch("client.dll", "4D 85 F6 0F 84 ? ? ? ? 49 8B CE E8 ? ? ? ? 83 F8", 0x0, "83 F6 00"),
