@@ -11,15 +11,15 @@ MAKE_HOOK(IMaterialSystem_FindMaterial, U::Memory.GetVFunc(I::MaterialSystem, 71
 {
 	if (SDK::BlacklistFile(pMaterialName))
 	{
-		if (std::strstr(pMaterialName, "engine/defaultcubemap"))
-		{
-			return CALL_ORIGINAL(rcx, "debug/debugempty", pTextureGroupName, false, nullptr);
-		}
-
 		return CALL_ORIGINAL(rcx, "debug/debugempty", pTextureGroupName, false, nullptr);
 	}
 
-	return CALL_ORIGINAL(rcx, pMaterialName, pTextureGroupName, complain, pComplainPrefix);
+	if (auto pMaterial = CALL_ORIGINAL(rcx, pMaterialName, pTextureGroupName, complain, pComplainPrefix))
+	{
+		return pMaterial;
+	}
+
+	return CALL_ORIGINAL(rcx, "debug/debugempty", pTextureGroupName, false, nullptr);
 }
 
 MAKE_HOOK(IMaterialSystem_FindTexture, U::Memory.GetVFunc(I::MaterialSystem, 79), ITexture*, // 79
@@ -30,7 +30,12 @@ MAKE_HOOK(IMaterialSystem_FindTexture, U::Memory.GetVFunc(I::MaterialSystem, 79)
 		return CALL_ORIGINAL(rcx, "error", pTextureGroupName, false, nAdditionalCreationFlags);
 	}
 
-	return CALL_ORIGINAL(rcx, pTextureName, pTextureGroupName, complain, nAdditionalCreationFlags);
+	if (auto pTexture = CALL_ORIGINAL(rcx, pTextureName, pTextureGroupName, complain, nAdditionalCreationFlags))
+	{
+		return pTexture;
+	}
+
+	return CALL_ORIGINAL(rcx, "error", pTextureGroupName, false, nAdditionalCreationFlags);
 }
 
 MAKE_HOOK(IMaterialSystem_CreateRenderTargetTexture, U::Memory.GetVFunc(I::MaterialSystem, 84), ITexture*, // 84

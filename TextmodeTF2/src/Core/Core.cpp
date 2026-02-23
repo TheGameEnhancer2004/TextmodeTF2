@@ -240,6 +240,17 @@ int CCore::LoadClient()
 	return m_bClientLoaded = true;
 }
 
+int CCore::LoadGameUI()
+{
+	if (!GetModuleHandleA("GameUI.dll"))
+		return LOAD_WAIT;
+
+	if (!U::BytePatches.Initialize("gameui"))
+		return LOAD_FAIL;
+
+	return m_bGameUILoaded = true;
+}
+
 int CCore::LoadParticles()
 {
 	if (!G::CParticleSystemMgr_DrawRenderCacheAddr)
@@ -352,6 +363,7 @@ void CCore::Load()
 			GetModuleHandleA("engine.dll") &&
 			GetModuleHandleA("materialsystem.dll") &&
 			GetModuleHandleA("client.dll") &&
+			GetModuleHandleA("GameUI.dll") &&
 			GetModuleHandleA("datacache.dll") &&
 			GetModuleHandleA("video_services.dll") &&
 			GetModuleHandleA("vphysics.dll");
@@ -365,6 +377,9 @@ void CCore::Load()
 		int iClient = m_bClientLoaded ? 1 : LoadClient();
 		CHECK(iClient, "Failed to load client")
 
+		int iGameUI = m_bGameUILoaded ? 1 : LoadGameUI();
+		CHECK(iGameUI, "Failed to load gameui")
+
 		int iParticles = m_bParticlesLoaded ? 1 : LoadParticles();
 		CHECK(iParticles, "Failed to load particle system")
 
@@ -377,12 +392,13 @@ void CCore::Load()
 		int iVPhysics = m_bVPhysicsLoaded ? 1 : LoadVPhysics();
 		CHECK(iVPhysics, "Failed to load vphysics")
 	}
-	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded || !m_bVideoServicesLoaded || !m_bVPhysicsLoaded);
+	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bGameUILoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded || !m_bVideoServicesLoaded || !m_bVPhysicsLoaded);
 
 	SDK::Output("TextmodeTF2", std::format("Loaded in {} seconds", SDK::PlatFloatTime()).c_str());
 
 	// Final verification log
 	SDK::Output("Core", "Initialization complete. All bytepatches and hooks applied.");
+
 }
 
 void CCore::Loop()

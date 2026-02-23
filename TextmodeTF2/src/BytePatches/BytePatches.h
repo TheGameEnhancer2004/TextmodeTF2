@@ -60,19 +60,19 @@ public:
 
 			// Mod_LoadLighting
 			// nulls out lighting data loading for maps
-			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18", 0x0, "C3"),
+			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18 48 8B 05 ? ? ? ? 48 C7 80 20 01 00 00 00 00 00 00", 0x0, "C3"),
 			
 			// Sprite_LoadModel
 			// nulls out sprite model loading
-			BytePatch("engine.dll", "48 89 5C 24 08 48 89 74 24 18 57 41 56 41 57 48", 0x0, "C3"),
+			BytePatch("engine.dll", "48 89 5C 24 08 48 89 74 24 18 57 41 56 41 57 48 81 EC 50 01 00 00 83 4A 10 01 33 DB 48 8B 0D ? ? ? ? 48 8B FA", 0x0, "C3"),
 
 			// Mod_LoadWorldlights
 			// nulls out world light loading
-			BytePatch("engine.dll", "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57", 0x0, "C3"),
+			BytePatch("engine.dll", "40 56 41 56 41 57 48 83 EC 50 4C 8B 05 ? ? ? ? 33 F6 44 0F B6 FA 4C 8B F1 49 89 B0 38 01 00 00 48 63 01 85 C0 75 18", 0x0, "C3"),
 
 			// Mod_LoadTexinfo
 			// forces mat_loadtextures 0 logic to skip material loading
-			BytePatch("engine.dll", "0F 84 ? ? ? ? 48 63 7E 44", 0x0, "90 E9"),
+			BytePatch("engine.dll", "0F 84 ? ? ? ? 48 63 7E 44 85 FF 0F 88 ? ? ? ? 48 63 44 24 48", 0x0, "90 E9"),
 		}},
 		{"materialsystem",
 		{
@@ -82,11 +82,8 @@ public:
 
 			// CMaterialSystem::BeginFrame
 			// bye bye frame rendering!
-			BytePatch("materialsystem.dll", "48 8B 0D ? ? ? ? 48 8B 01 48 FF A0 ? ? ? ? CC", 0x0, "C3"),
+			BytePatch("materialsystem.dll", "40 57 48 81 EC C0 00 00 00 0F 29 B4 24 ? ? ? ? 48 8B F9 0F 28 F1 FF 15 ? ? ? ? 84 C0 0F 84", 0x0, "C3"),
 
-			// CMaterialSystem::FindMaterial
-			// returns NULL for every material lookup
-			BytePatch("materialsystem.dll", "48 8B F9 48 8B CA 49 8B D8 FF 10 4C 8B C0 48 8D 15 ? ? ? ? 48 8D 4C 24 20", 0x0, "31 C0 C3"),
 		}},
 		{"client",
 		{
@@ -156,8 +153,10 @@ public:
 			// Fixes crash in client.dll+0x57cc59v 
 			BytePatch("client.dll", "8B 89 ? ? ? ? 85 C9 0F 84 ? ? ? ? 41 BF ? ? ? ?", 0x0, "31 C9 90 90 90 90"),
 
-			// Fixes crash in CHudTextMessage 
-			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39", 0x3, "EB"),
+			// Fixes crash in CHudTextMessage (make index guard unconditional across all 3 duplicated blocks)
+			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39 41 B8 00 02 00 00 48 8D 95 40 0B 00 00", 0x3, "EB"),
+			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39 41 B8 00 02 00 00 48 8D 95 40 0D 00 00", 0x3, "EB"),
+			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39 41 B8 00 02 00 00 48 8D 95 40 0F 00 00", 0x3, "EB"),
 		}},
 		{"datacache",
 		{
@@ -166,6 +165,12 @@ public:
 
 			// Fixes crash in datacache.dll+0xf2b3 (likely FindMDL or similar) 
 			BytePatch("datacache.dll", "4E 8B 44 C0 10 4D 85 C0 0F 84 80 00 00 00", 0x0, "45 31 C0 90 90 4D 85 C0 0F 84 80 00 00 00"),
+		}},
+		{"gameui",
+		{
+			BytePatch("GameUI.dll", "80 79 08 00 75 03 32 C0 C3 48 8B 49 10 48 8B 01 48 FF A0 10 01 00 00", 0x0, "32 C0 C3"),
+
+			BytePatch("GameUI.dll", "48 8B 49 10 48 8B 01 48 FF A0 10 01 00 00", 0x4, "32 C0 C3 90 90 90 90 90 90 90"),
 		}}
 	};
 };

@@ -26,6 +26,9 @@ static PVOID s_pHandle;
 static LPVOID s_lpParam;
 static std::unordered_map<LPVOID, bool> s_mAddresses = {};
 static int s_iExceptions = 0;
+#ifdef _DEBUG
+static LONG s_lShowingCrashDialog = 0;
+#endif
 
 static std::deque<Frame_t> StackTrace(PCONTEXT pContext)
 {
@@ -124,6 +127,7 @@ static LONG APIENTRY ExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 	case STATUS_ACCESS_VIOLATION: sError = "ACCESS VIOLATION"; break;
 	case STATUS_STACK_OVERFLOW: sError = "STACK OVERFLOW"; break;
 	case STATUS_HEAP_CORRUPTION: sError = "HEAP CORRUPTION"; break;
+	case 0x4001000A: // DBG_PRINTEXCEPTION_WIDE_C (OutputDebugStringW)
 	case MS_VC_EXCEPTION:
 	case DBG_PRINTEXCEPTION_C: return EXCEPTION_EXECUTE_HANDLER;
 	}
@@ -189,6 +193,15 @@ static LONG APIENTRY ExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 		ssErrorStream << "Logged to TextmodeTF2\\crash_log.txt. ";
 	}
 	catch (...) {}
+
+#ifdef _DEBUG
+	if (InterlockedCompareExchange(&s_lShowingCrashDialog, 1, 0) == 0)
+	{
+		const std::string sCrashText = ssErrorStream.str();
+		MessageBoxA(nullptr, sCrashText.c_str(), "TextmodeTF2 Exception", MB_OK | MB_ICONERROR | MB_SETFOREGROUND | MB_SYSTEMMODAL);
+		InterlockedExchange(&s_lShowingCrashDialog, 0);
+	}
+#endif
 
 	return EXCEPTION_EXECUTE_HANDLER;
 }

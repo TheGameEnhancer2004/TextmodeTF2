@@ -45,7 +45,6 @@ bool BytePatch::Initialize()
 	Write(m_vPatch);
 
 	SDK::Output("BytePatches", std::format("Successfully patched {:#x} ('{}', '{}')!", uintptr_t(m_pAddress), m_sModule, m_sSignature).c_str());
-	U::Core.AppendSuccessText("BytePatches", std::format("Successfully patched {:#x} ('{}', '{}')!", uintptr_t(m_pAddress), m_sModule, m_sSignature).c_str());
 	return m_bIsPatched = true;
 }
 
