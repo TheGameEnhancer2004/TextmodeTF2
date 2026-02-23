@@ -2,6 +2,7 @@
 
 #include "../SDK/SDK.h"
 #include "../BytePatches/BytePatches.h"
+#include "../Hooks/VPhysics.h"
 #include <filesystem>
 
 #define LOAD_WAIT 0 - m_bTimeout
@@ -122,6 +123,41 @@ int CCore::LoadEngine()
 			if (!U::Hooks.Initialize("CDebugOverlay_AddLineOverlay")) return LOAD_FAIL;
 			bRenderHooksInit = true;
 		}
+
+		if (!G::CEngineSoundClient_EmitSoundInternalAddr)
+			G::CEngineSoundClient_EmitSoundInternalAddr = U::Memory.FindSignature("engine.dll", "48 8B C4 44 89 48 20 55 41 57 48 8D 68 C8 48 81 EC ?? ?? ?? ??");
+		if (G::CEngineSoundClient_EmitSoundInternalAddr)
+			U::Hooks.Initialize("CEngineSoundClient_EmitSoundInternal");
+
+		if (!G::R_DrawDecalsAllAddr)
+			G::R_DrawDecalsAllAddr = U::Memory.FindSignature("engine.dll", "48 89 4C 24 08 55 48 8D AC 24 ?? ?? ?? ?? B8 ?? ?? ?? ?? E8");
+		if (G::R_DrawDecalsAllAddr)
+			U::Hooks.Initialize("R_DrawDecalsAll");
+
+		if (!G::CShadowMgr_RenderShadowsAddr)
+			G::CShadowMgr_RenderShadowsAddr = U::Memory.FindSignature("engine.dll", "4C 8B DC 55 41 57 48 83 EC ?? 48 8B 05 ?? ?? ?? ?? 45 33 FF");
+		if (G::CShadowMgr_RenderShadowsAddr)
+			U::Hooks.Initialize("CShadowMgr_RenderShadows");
+
+		if (!G::SVC_TempEntities_ProcessAddr)
+			G::SVC_TempEntities_ProcessAddr = U::Memory.FindSignature("engine.dll", "48 8B D1 48 8B 49 20 48 8B 01 48 FF A0 C0 00 00 00");
+		if (G::SVC_TempEntities_ProcessAddr)
+			U::Hooks.Initialize("SVC_TempEntities_Process");
+
+		if (!G::SVC_GameEvent_ProcessAddr)
+			G::SVC_GameEvent_ProcessAddr = U::Memory.FindSignature("engine.dll", "48 8B D1 48 8B 49 20 48 8B 01 48 FF A0 A0 00 00 00");
+		if (G::SVC_GameEvent_ProcessAddr)
+			U::Hooks.Initialize("SVC_GameEvent_Process");
+
+		if (!G::SVC_Sounds_ProcessAddr)
+			G::SVC_Sounds_ProcessAddr = U::Memory.FindSignature("engine.dll", "48 8B D1 48 8B 49 20 48 8B 01 48 FF A0 78 00 00 00");
+		if (G::SVC_Sounds_ProcessAddr)
+			U::Hooks.Initialize("SVC_Sounds_Process");
+
+		if (!G::SVC_BSPDecal_ProcessAddr)
+			G::SVC_BSPDecal_ProcessAddr = U::Memory.FindSignature("engine.dll", "48 8B D1 48 8B 49 20 48 8B 01 48 FF A0 98 00 00 00");
+		if (G::SVC_BSPDecal_ProcessAddr)
+			U::Hooks.Initialize("SVC_BSPDecal_Process");
 	}
 
 	static bool bBytePatchesInit{ false };
@@ -153,6 +189,28 @@ int CCore::LoadMatSys()
 		if (!U::Hooks.Initialize(cHook))
 			return LOAD_FAIL;
 
+	if (I::StudioRender)
+	{
+		G::IStudioRender_DrawModelAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(I::StudioRender, 29));
+		G::IStudioRender_DrawModelStaticPropAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(I::StudioRender, 30));
+		G::IStudioRender_DrawStaticPropDecalsAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(I::StudioRender, 31));
+		G::IStudioRender_DrawStaticPropShadowsAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(I::StudioRender, 32));
+		G::IStudioRender_AddDecalAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(I::StudioRender, 36));
+		G::IStudioRender_AddShadowAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(I::StudioRender, 39));
+		G::IStudioRender_DrawModelArrayAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(I::StudioRender, 46));
+
+		U::Hooks.Initialize("IStudioRender_DrawModel");
+		U::Hooks.Initialize("IStudioRender_DrawModelStaticProp");
+		U::Hooks.Initialize("IStudioRender_DrawStaticPropDecals");
+		U::Hooks.Initialize("IStudioRender_DrawStaticPropShadows");
+		U::Hooks.Initialize("IStudioRender_AddDecal");
+		U::Hooks.Initialize("IStudioRender_AddShadow");
+		U::Hooks.Initialize("IStudioRender_DrawModelArray");
+	}
+
+	if (!U::BytePatches.Initialize("materialsystem"))
+		return LOAD_FAIL;
+
 	return m_bMatSysLoaded = true;
 }
 
@@ -160,6 +218,24 @@ int CCore::LoadClient()
 {
 	if (!U::BytePatches.Initialize("client"))
 		return LOAD_WAIT;
+
+	// IBaseClientDLL::FrameStageNotify
+	if (!G::IBaseClientDLL_FrameStageNotifyAddr)
+	{
+		if (auto pClient = U::Memory.FindInterface("client.dll", "VClient017"))
+			G::IBaseClientDLL_FrameStageNotifyAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(pClient, 35));
+	}
+	if (G::IBaseClientDLL_FrameStageNotifyAddr)
+		U::Hooks.Initialize("IBaseClientDLL_FrameStageNotify");
+
+	// IPanel::PaintTraverse
+	if (!G::IPanel_PaintTraverseAddr)
+	{
+		if (auto pPanel = U::Memory.FindInterface("vgui2.dll", "VGUI_Panel009"))
+			G::IPanel_PaintTraverseAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(pPanel, 41));
+	}
+	if (G::IPanel_PaintTraverseAddr)
+		U::Hooks.Initialize("IPanel_PaintTraverse");
 
 	return m_bClientLoaded = true;
 }
@@ -186,7 +262,7 @@ int CCore::LoadParticles()
 		m_bParticlesLoaded = true;
 	}
 
-	return LOAD_WAIT;
+	return m_bParticlesLoaded ? 1 : LOAD_WAIT;
 }
 
 int CCore::LoadMDLCache()
@@ -198,7 +274,45 @@ int CCore::LoadMDLCache()
 	if (!U::Hooks.Initialize("IMDLCache_ProcessDataIntoCache"))
 		return LOAD_FAIL;
 
+	if (!U::Hooks.Initialize("IMDLCache_GetHardwareData"))
+		return LOAD_FAIL;
+
+	if (!U::Hooks.Initialize("IMDLCache_GetVertexData"))
+		return LOAD_FAIL;
+
+	if (!U::Hooks.Initialize("IMDLCache_TouchAllData"))
+		return LOAD_FAIL;
+
+	if (!U::BytePatches.Initialize("datacache"))
+		return LOAD_FAIL;
+
 	return m_bMDLCacheLoaded = true;
+}
+
+int CCore::LoadVideoServices()
+{
+	I::VideoServices = reinterpret_cast<IVideoServices*>(U::Memory.FindInterface("video_services.dll", "IVideoServices002"));
+	if (!I::VideoServices)
+		return LOAD_WAIT;
+
+	if (!U::Hooks.Initialize("IVideoServices_CreateVideoMaterial"))
+		return LOAD_FAIL;
+
+	if (!U::Hooks.Initialize("IVideoServices_PlayVideoFileFullScreen"))
+		return LOAD_FAIL;
+
+	return m_bVideoServicesLoaded = true;
+}
+
+int CCore::LoadVPhysics()
+{
+	G::Physics = reinterpret_cast<IPhysics*>(U::Memory.FindInterface("vphysics.dll", "VPhysics031"));
+	if (!G::Physics)
+		return LOAD_WAIT;
+
+	Hooks::VPhysics::Initialize();
+
+	return m_bVPhysicsLoaded = true;
 }
 
 void CCore::Load()
@@ -237,7 +351,10 @@ void CCore::Load()
 		m_bTimeout = GetModuleHandleA("filesystem_stdio.dll") &&
 			GetModuleHandleA("engine.dll") &&
 			GetModuleHandleA("materialsystem.dll") &&
-			GetModuleHandleA("client.dll");
+			GetModuleHandleA("client.dll") &&
+			GetModuleHandleA("datacache.dll") &&
+			GetModuleHandleA("video_services.dll") &&
+			GetModuleHandleA("vphysics.dll");
 
 		int iFilesystem = m_bFilesystemLoaded ? 1 : LoadFilesystem();
 		CHECK(iFilesystem, "Failed to load file system")
@@ -253,10 +370,19 @@ void CCore::Load()
 
 		int iMDLCache = m_bMDLCacheLoaded ? 1 : LoadMDLCache();
 		CHECK(iMDLCache, "Failed to load MDL cache")
+
+		int iVideoServices = m_bVideoServicesLoaded ? 1 : LoadVideoServices();
+		CHECK(iVideoServices, "Failed to load video services")
+		
+		int iVPhysics = m_bVPhysicsLoaded ? 1 : LoadVPhysics();
+		CHECK(iVPhysics, "Failed to load vphysics")
 	}
-	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded);
+	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded || !m_bVideoServicesLoaded || !m_bVPhysicsLoaded);
 
 	SDK::Output("TextmodeTF2", std::format("Loaded in {} seconds", SDK::PlatFloatTime()).c_str());
+
+	// Final verification log
+	SDK::Output("Core", "Initialization complete. All bytepatches and hooks applied.");
 }
 
 void CCore::Loop()

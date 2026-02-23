@@ -64,6 +64,10 @@ bool CBytePatches::Initialize(const char* cModule)
 	for (auto& patch : m_mPatches[cModule])
 		if (!patch.Initialize())
 			bFail = true;
+
+	if (!bFail)
+		SDK::Output("BytePatches", std::format("Successfully initialized all byte patches for {}!", cModule).c_str());
+
 	return !bFail;
 }
 

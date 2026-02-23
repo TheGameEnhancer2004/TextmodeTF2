@@ -228,10 +228,15 @@
     <ClCompile Include="src\Hooks\Con_DebugLog.cpp" />
     <ClCompile Include="src\Hooks\CDebugOverlay_AddBoxOverlay.cpp" />
     <ClCompile Include="src\Hooks\CDebugOverlay_AddLineOverlay.cpp" />
+    <ClCompile Include="src\Hooks\CEngineSoundClient_EmitSoundInternal.cpp" />
+    <ClCompile Include="src\Hooks\IBaseClientDLL_FrameStageNotify.cpp" />
+    <ClCompile Include="src\Hooks\IPanel_PaintTraverse.cpp" />
     <ClCompile Include="src\Hooks\CModelLoader_GetModelForName.cpp" />
     <ClCompile Include="src\Hooks\CModelRender_DrawModelExecute.cpp" />
     <ClCompile Include="src\Hooks\CParticleCollection_Simulate.cpp" />
+    <ClCompile Include="src\Hooks\CShadowMgr_RenderShadows.cpp" />
     <ClCompile Include="src\Hooks\IMDLCache_ProcessDataIntoCache.cpp" />
+    <ClCompile Include="src\Hooks\IMDLCache_Hooks.cpp" />
     <ClCompile Include="src\Hooks\CParticleSystemMgr_DrawRenderCache.cpp" />
     <ClCompile Include="src\Hooks\CParticleSystemMgr_ReadParticleConfigFile.cpp" />
     <ClCompile Include="src\Hooks\CStaticPropMgr_DrawStaticProps.cpp" />
@@ -241,13 +246,21 @@
     <ClCompile Include="src\Hooks\IBaseFileSystem_Hooks.cpp" />
     <ClCompile Include="src\Hooks\IFileSystem_Hooks.cpp" />
     <ClCompile Include="src\Hooks\IMaterialSystem_Hooks.cpp" />
+    <ClCompile Include="src\Hooks\R_DrawDecalsAll.cpp" />
+    <ClCompile Include="src\Hooks\SVC_Sounds_Process.cpp" />
+    <ClCompile Include="src\Hooks\SVC_BSPDecal_Process.cpp" />
     <ClCompile Include="src\Hooks\S_PrecacheSound.cpp" />
+    <ClCompile Include="src\Hooks\SVC_GameEvent_Process.cpp" />
+    <ClCompile Include="src\Hooks\SVC_TempEntities_Process.cpp" />
+    <ClCompile Include="src\Hooks\IStudioRender_Hooks.cpp" />
+    <ClCompile Include="src\Hooks\IVideoServices_Hooks.cpp" />
     <ClCompile Include="src\SDK\SDK.cpp" />
     <ClCompile Include="src\Utils\CrashLog\CrashLog.cpp" />
     <ClCompile Include="src\Utils\Hooks\Hooks.cpp" />
     <ClCompile Include="src\Utils\Interfaces\Interfaces.cpp" />
     <ClCompile Include="src\Utils\Memory\Memory.cpp" />
     <ClCompile Include="src\Utils\Signatures\Signatures.cpp" />
+    <ClCompile Include="src\Hooks\VPhysics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\MinHook\buffer.h" />
@@ -261,6 +274,8 @@
     <ClInclude Include="src\BytePatches\BytePatches.h" />
     <ClInclude Include="src\SDK\Definitions\Interfaces\IMaterialSystem.h" />
     <ClInclude Include="src\SDK\Definitions\Interfaces\IMDLCache.h" />
+    <ClInclude Include="src\SDK\Definitions\Interfaces\IStudioRender.h" />
+    <ClInclude Include="src\SDK\Definitions\Interfaces\IVideoServices.h" />
     <ClInclude Include="src\SDK\Definitions\Interfaces\Interface.h" />
     <ClInclude Include="src\Core\Core.h" />
     <ClInclude Include="src\SDK\Definitions\Definitions.h" />
@@ -275,6 +290,8 @@
     <ClInclude Include="src\Utils\Interfaces\Interfaces.h" />
     <ClInclude Include="src\Utils\Memory\Memory.h" />
     <ClInclude Include="src\Utils\Signatures\Signatures.h" />
+    <ClInclude Include="src\Hooks\VPhysics.h" />
+    <ClInclude Include="src\SDK\Interfaces\IPhysics.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

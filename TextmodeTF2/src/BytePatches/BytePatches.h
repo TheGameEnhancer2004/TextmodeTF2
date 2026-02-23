@@ -41,6 +41,21 @@ public:
 			// Force Con_DebugLog to run
 			BytePatch("engine.dll", "74 ? 48 8D 54 24 ? 48 8D 0D ? ? ? ? E8 ? ? ? ? 38 1D", 0x0, "90 90"),
 
+			// CVideoModeCommon::UpdateWindow 
+			// Prevents crash during window update in textmode 
+			BytePatch("engine.dll", "E8 ? ? ? ? EB ? B1 ?", 0x0, "C3"),
+
+			// Fixes crash in engine.dll (CVideoModeCommon::GetModeCount or similar) 
+			BytePatch("engine.dll", "8B 44 D0 ? C3 CC", 0x0, "31 C0 C3 90 90 90"),
+
+			// S_Init 
+			BytePatch("engine.dll", "45 33 C0 48 8D 15 ? ? ? ? 48 8B C8 4C 8B 08 41 FF 51 18 48 85 C0 74", 0x17, "90 90"),
+
+			// Hard bypass for fps_max 30 limit in sub_18020CB60 (engine.dll+0x20CC0C) 
+			// Matches: F3 0F 10 40 54 0F 2F 05 ?? ?? ?? ?? 73 ?? 
+			// We patch the 'jnb' (73) to 'jmp' (EB) to skip the 30fps clamp 
+			BytePatch("engine.dll", "F3 0F 10 40 54 0F 2F 05 ?? ?? ?? ?? 73 ??", 0xC, "EB"),
+
 			// evil cathook's plan b implementation
 
 			// Mod_LoadLighting
@@ -63,7 +78,7 @@ public:
 		{
 			// CMaterialSystem::Init
 			// Returns 1 (INIT_OK) to prevent material system initialization but allow engine to continue anywyay
-			BytePatch("materialsystem.dll", "40 53 48 83 EC 20 48 8B D9 48 8B 0D ? ? ? ? 48 8B 01 FF 90 ? ? ? ? 48 8B 0D", 0x0, "B8 01 00 00 00 C3"),
+			BytePatch("materialsystem.dll", "40 53 48 81 EC 70 01 00 00 48 83 3D ? ? ? ? ? 48 8B D9 74 ? 80 79 08 00 74", 0x0, "B8 01 00 00 00 C3"),
 
 			// CMaterialSystem::BeginFrame
 			// bye bye frame rendering!
@@ -137,11 +152,20 @@ public:
 			
 			// Fixes crash
 			BytePatch("client.dll", "45 85 C0 78 3E 4C 8B 11 45 3B 82 E8 00 00 00 7D 32", 0x0, "4C 8B 11 4D 85 D2 74 3B 45 3B 82 E8 00 00 00 73 32"),
+
+			// Fixes crash in client.dll+0x57cc59v 
+			BytePatch("client.dll", "8B 89 ? ? ? ? 85 C9 0F 84 ? ? ? ? 41 BF ? ? ? ?", 0x0, "31 C9 90 90 90 90"),
+
+			// Fixes crash in CHudTextMessage 
+			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39", 0x3, "EB"),
 		}},
 		{"datacache",
 		{
 			// CDataCacheSection::Unlock CRASHFIX!
 			BytePatch("datacache.dll", "48 89 5C 24 18 48 89 7C 24 20 41 56 48 83 EC 20 F6 81 E0 00 00 00 04", 0x41, "90 90 90 90 90"),
+
+			// Fixes crash in datacache.dll+0xf2b3 (likely FindMDL or similar) 
+			BytePatch("datacache.dll", "4E 8B 44 C0 10 4D 85 C0 0F 84 80 00 00 00", 0x0, "45 31 C0 90 90 4D 85 C0 0F 84 80 00 00 00"),
 		}}
 	};
 };
