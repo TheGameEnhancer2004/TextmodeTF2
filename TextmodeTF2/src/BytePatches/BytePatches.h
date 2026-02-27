@@ -41,37 +41,89 @@ public:
 			// Force Con_DebugLog to run
 			BytePatch("engine.dll", "74 ? 48 8D 54 24 ? 48 8D 0D ? ? ? ? E8 ? ? ? ? 38 1D", 0x0, "90 90"),
 
+			// CVideoModeCommon::UpdateWindow 
+			// Prevents crash during window update in textmode by skipping one callsite safely.
+			BytePatch("engine.dll", "E8 ? ? ? ? EB ? B1 ?", 0x0, "90 90 90 90 90"),
+
+			// Fixes crash in engine.dll (CVideoModeCommon::GetModeCount or similar) 
+			BytePatch("engine.dll", "8B 44 D0 ? C3 CC", 0x0, "31 C0 C3 90 90 90"),
+
+			// S_Init 
+			// Signature intentionally anchored through the -nosound branch to avoid multi-hit false matches.
+			BytePatch("engine.dll", "45 33 C0 48 8D 15 ? ? ? ? 48 8B C8 4C 8B 08 41 FF 51 18 48 85 C0 74 ? E8 ? ? ? ? 45 33 C0 48 89 05 ? ? ? ? 48 8D 15", 0x17, "90 90"),
+
+			// Hard bypass for fps_max 30 limit in sub_18020CB60 (engine.dll+0x20CC0C) 
+			// Matches: F3 0F 10 40 54 0F 2F 05 ?? ?? ?? ?? 73 ?? 
+			// We patch the 'jnb' (73) to 'jmp' (EB) to skip the 30fps clamp 
+			BytePatch("engine.dll", "F3 0F 10 40 54 0F 2F 05 ?? ?? ?? ?? 73 ??", 0xC, "EB"),
+
+			// SCR_UpdateScreen
+			BytePatch("engine.dll", "40 55 41 54 41 56 41 57 48 8D 6C 24 ? 48 81 EC 88 00 00 00 48 8B 05 ? ? ? ? 45 33 E4 4C 89 65 ? 45 8B FC", 0x0, "31 C0 C3"),
+
+			// CEngineVGui::Simulate
+			BytePatch("engine.dll", "41 57 48 81 EC A0 00 00 00 4C 8B F9 48 8B 0D ? ? ? ? 48 8B 01 FF 90 20 01 00 00 49 83 BF B8 00 00 00 00", 0x0, "31 C0 C3"),
+
+			// CL_DecayLights
+			BytePatch("engine.dll", "48 83 EC 48 0F 29 74 24 30 48 8D 0D ? ? ? ? 0F 29 7C 24 20 E8 ? ? ? ? 0F 28 F8 0F 57 F6 0F 2F FE 0F 86 ? ? ? ?", 0x0, "C3"),
+
+			// _Host_RunFrame -> _Host_RunFrame_Render callsite
+			BytePatch("engine.dll", "45 84 E4 0F 84 ? ? ? ? E8 ? ? ? ? 48 8B 05 ? ? ? ? 4C 8D 25 ? ? ? ? 4C 89 7D ? 48 8D 15", 0x9, "90 90 90 90 90"),
+
+			// _Host_RunFrame_Sound callsite
+			BytePatch("engine.dll", "83 3D ? ? ? ? 06 F2 0F 11 05 ? ? ? ? 75 09 48 8D 0D ? ? ? ? EB 02 33 C9 E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 10 0D", 0x1C, "90 90 90 90 90"),
+
+			// _Host_RunFrame_Client voice gate callsite
+			BytePatch("engine.dll", "F3 0F 10 05 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 0F 57 C0 C6 44 24 ? 01", 0xD, "31 C0 90 90 90"),
+
+			// _Host_RunFrame_Input -> ClientDLL_ProcessInput callsite
+			BytePatch("engine.dll", "FF 15 ? ? ? ? F2 0F 11 05 ? ? ? ? E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 11 05 ? ? ? ? E8 ? ? ? ?", 0xE, "90 90 90 90 90"),
+
+			// _Host_RunFrame non-threaded path -> CL_RunPrediction(PREDICTION_NORMAL)
+			BytePatch("engine.dll", "48 8B 01 FF 50 18 B9 01 00 00 00 E8 ? ? ? ? E8 ? ? ? ? F3 0F 10 05 ? ? ? ? E8 ? ? ? ? 48 85 F6 74 ? 45 33 C9", 0xB, "90 90 90 90 90"),
+
+			// _Host_RunFrame threaded path -> CL_RunPrediction(PREDICTION_NORMAL)
+			BytePatch("engine.dll", "B9 01 00 00 00 F3 0F 10 05 ? ? ? ? F3 0F 5E 05 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 48 8D 0D ? ? ? ? C6 05", 0x1D, "90 90 90 90 90"),
+
+			// _Host_RunFrame non-threaded path -> CL_ExtraMouseUpdate
+			BytePatch("engine.dll", "F3 0F 10 05 ? ? ? ? E8 ? ? ? ? 48 85 F6 74 ? 45 33 C9 44 89 7C 24 20 45 33 C0 48 8B D3 48 8B CE FF 96 A8 00 00 00", 0x8, "90 90 90 90 90"),
+
+			// _Host_RunFrame threaded path -> CL_ExtraMouseUpdate
+			BytePatch("engine.dll", "E8 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? F2 0F 10 05 ? ? ? ? 66 0F 5A C0 44 89 35 ? ? ? ? 89 35 ? ? ? ? F3 0F 11 05", 0xD, "90 90 90 90 90"),
+
+			// _Host_RunFrame fallback sleep path
+			BytePatch("engine.dll", "48 8B 05 ? ? ? ? 8B 48 58 E8 ? ? ? ? 8B 0D ? ? ? ? 85 C9 74 05 E8 ? ? ? ? E8", 0xF, "B9 01 00 00 00 90"),
+
+			// _Host_RunFrame tick loop -> toolframework->Think callsite
+			BytePatch("engine.dll", "40 38 3D ? ? ? ? 75 08 0F B6 CB E8 ? ? ? ? 48 8B 0D ? ? ? ? 0F B6 D3 48 8B 01 FF 90 D8 00 00 00 F2 0F 10 0D ? ? ? ?", 0x1E, "90 90 90 90 90 90"),
+
 			// evil cathook's plan b implementation
 
 			// Mod_LoadLighting
 			// nulls out lighting data loading for maps
-			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18", 0x0, "C3"),
+			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18 48 8B 05 ? ? ? ? 48 C7 80 20 01 00 00 00 00 00 00", 0x0, "31 C0 C3"),
 			
 			// Sprite_LoadModel
 			// nulls out sprite model loading
-			BytePatch("engine.dll", "48 89 5C 24 08 48 89 74 24 18 57 41 56 41 57 48", 0x0, "C3"),
+			BytePatch("engine.dll", "48 89 5C 24 08 48 89 74 24 18 57 41 56 41 57 48 81 EC 50 01 00 00 83 4A 10 01 33 DB 48 8B 0D ? ? ? ? 48 8B FA", 0x0, "C3"),
 
 			// Mod_LoadWorldlights
 			// nulls out world light loading
-			BytePatch("engine.dll", "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57", 0x0, "C3"),
+			BytePatch("engine.dll", "40 56 41 56 41 57 48 83 EC 50 4C 8B 05 ? ? ? ? 33 F6 44 0F B6 FA 4C 8B F1 49 89 B0 38 01 00 00 48 63 01 85 C0 75 18", 0x0, "31 C0 C3"),
 
 			// Mod_LoadTexinfo
 			// forces mat_loadtextures 0 logic to skip material loading
-			BytePatch("engine.dll", "0F 84 ? ? ? ? 48 63 7E 44", 0x0, "90 E9"),
+			BytePatch("engine.dll", "0F 84 ? ? ? ? 48 63 7E 44 85 FF 0F 88 ? ? ? ? 48 63 44 24 48", 0x0, "90 E9"),
 		}},
 		{"materialsystem",
 		{
 			// CMaterialSystem::Init
 			// Returns 1 (INIT_OK) to prevent material system initialization but allow engine to continue anywyay
-			BytePatch("materialsystem.dll", "40 53 48 83 EC 20 48 8B D9 48 8B 0D ? ? ? ? 48 8B 01 FF 90 ? ? ? ? 48 8B 0D", 0x0, "B8 01 00 00 00 C3"),
+			BytePatch("materialsystem.dll", "40 53 48 81 EC 70 01 00 00 48 83 3D ? ? ? ? ? 48 8B D9 74 ? 80 79 08 00 74", 0x0, "B8 01 00 00 00 C3"),
 
 			// CMaterialSystem::BeginFrame
 			// bye bye frame rendering!
-			BytePatch("materialsystem.dll", "48 8B 0D ? ? ? ? 48 8B 01 48 FF A0 ? ? ? ? CC", 0x0, "C3"),
+			BytePatch("materialsystem.dll", "40 57 48 81 EC C0 00 00 00 0F 29 B4 24 ? ? ? ? 48 8B F9 0F 28 F1 FF 15 ? ? ? ? 84 C0 0F 84", 0x0, "C3"),
 
-			// CMaterialSystem::FindMaterial
-			// returns NULL for every material lookup
-			BytePatch("materialsystem.dll", "48 8B F9 48 8B CA 49 8B D8 FF 10 4C 8B C0 48 8D 15 ? ? ? ? 48 8D 4C 24 20", 0x0, "31 C0 C3"),
 		}},
 		{"client",
 		{
@@ -85,6 +137,15 @@ public:
 			BytePatch("client.dll", "44 89 44 24 ? 53 55 56 57 41 54 41 56", 0x0, "31 C0 C3"),
 			// CViewRender::Render
 			BytePatch("client.dll", "48 89 50 ? 55 57 41 56", 0x0, "31 C0 C3"),
+
+			// CHLClient::HudUpdate -> GetClientVoiceMgr()->Frame(frametime)
+			BytePatch("client.dll", "E8 ? ? ? ? 48 8B C8 0F 28 CE E8 ? ? ? ? 0F B6 D3 48 8D 0D ? ? ? ? E8 ? ? ? ?", 0xB, "90 90 90 90 90"),
+
+			// CHLClient::HudUpdate -> vgui::GetAnimationController()->UpdateAnimations(engine->Time())
+			BytePatch("client.dll", "48 8B 0D ? ? ? ? 48 8B 01 FF 50 70 0F 28 F0 E8 ? ? ? ? 48 8B C8 0F 28 CE E8 ? ? ? ? 48 8B 05 ? ? ? ?", 0x1B, "90 90 90 90 90"),
+
+			// CHLClient::HudUpdate -> C_BaseTempEntity::CheckDynamicTempEnts
+			BytePatch("client.dll", "48 8B 0D ? ? ? ? 48 8D 15 ? ? ? ? 4C 8B C0 FF 13 E8 ? ? ? ? 48 8B 0D ? ? ? ? 48 8B 01 FF 90 D8 00 00 00", 0x13, "90 90 90 90 90"),
 
 			// This fixes the datacache.dll crash
 			BytePatch("client.dll", "4D 85 F6 0F 84 ? ? ? ? 49 8B CE E8 ? ? ? ? 83 F8", 0x0, "83 F6 00"),
@@ -137,11 +198,28 @@ public:
 			
 			// Fixes crash
 			BytePatch("client.dll", "45 85 C0 78 3E 4C 8B 11 45 3B 82 E8 00 00 00 7D 32", 0x0, "4C 8B 11 4D 85 D2 74 3B 45 3B 82 E8 00 00 00 73 32"),
+
+			// Fixes crash in client.dll+0x57cc59v 
+			BytePatch("client.dll", "8B 89 ? ? ? ? 85 C9 0F 84 ? ? ? ? 41 BF ? ? ? ?", 0x0, "31 C9 90 90 90 90"),
+
+			// Fixes crash in CHudTextMessage (make index guard unconditional across all 3 duplicated blocks)
+			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39 41 B8 00 02 00 00 48 8D 95 40 0B 00 00", 0x3, "EB"),
+			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39 41 B8 00 02 00 00 48 8D 95 40 0D 00 00", 0x3, "EB"),
+			BytePatch("client.dll", "83 E8 01 78 13 48 63 C8 0F B6 04 39 3C 0A 74 04 3C 0D 75 04 44 88 3C 39 41 B8 00 02 00 00 48 8D 95 40 0F 00 00", 0x3, "EB"),
 		}},
 		{"datacache",
 		{
 			// CDataCacheSection::Unlock CRASHFIX!
 			BytePatch("datacache.dll", "48 89 5C 24 18 48 89 7C 24 20 41 56 48 83 EC 20 F6 81 E0 00 00 00 04", 0x41, "90 90 90 90 90"),
+
+			// Fixes crash in datacache.dll+0xf2b3 (likely FindMDL or similar) 
+			BytePatch("datacache.dll", "4E 8B 44 C0 10 4D 85 C0 0F 84 80 00 00 00", 0x0, "45 31 C0 90 90 4D 85 C0 0F 84 80 00 00 00"),
+		}},
+		{"gameui",
+		{
+			BytePatch("GameUI.dll", "80 79 08 00 75 03 32 C0 C3 48 8B 49 10 48 8B 01 48 FF A0 10 01 00 00", 0x0, "32 C0 C3"),
+
+			BytePatch("GameUI.dll", "48 8B 49 10 48 8B 01 48 FF A0 10 01 00 00", 0x4, "32 C0 C3 90 90 90 90 90 90 90"),
 		}}
 	};
 };

@@ -17,14 +17,17 @@ public:
 	bool m_bUnload = false;
 	bool m_bTimeout = false;
 private:
-	bool m_bFilesystemLoaded = false, m_bEngineLoaded = false, m_bMatSysLoaded = false, m_bClientLoaded = false, m_bParticlesLoaded = false, m_bMDLCacheLoaded = false;
+	bool m_bFilesystemLoaded = false, m_bEngineLoaded = false, m_bMatSysLoaded = false, m_bClientLoaded = false, m_bGameUILoaded = false, m_bParticlesLoaded = false, m_bMDLCacheLoaded = false, m_bVideoServicesLoaded = false, m_bVPhysicsLoaded = false;
 
 	int LoadFilesystem();
 	int LoadEngine();
 	int LoadMatSys();
 	int LoadClient();
+	int LoadGameUI();
 	int LoadParticles();
 	int LoadMDLCache();
+	int LoadVideoServices();
+	int LoadVPhysics();
 
 	std::stringstream ssFailStream;
 };

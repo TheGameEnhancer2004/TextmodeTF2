@@ -37,7 +37,7 @@ public:
 	virtual void* GetVirtualModel(MDLHandle_t handle) = 0;
 	virtual int GetAutoplayList(MDLHandle_t handle, unsigned short** pOut) = 0;
 	virtual void* GetVertexData(MDLHandle_t handle) = 0;
-	virtual void TouchAllData(MDLHandle_t handle) = 0;
+	virtual void TouchAllData_Old(MDLHandle_t handle) = 0;
 	virtual void SetUserData(MDLHandle_t handle, void* pData) = 0;
 	virtual void* GetUserData(MDLHandle_t handle) = 0;
 	virtual bool IsErrorModel(MDLHandle_t handle) = 0;
@@ -55,5 +55,15 @@ public:
 	virtual bool SetAsyncLoad(MDLCacheDataType_t type, bool bAsync) = 0;
 	virtual void BeginMapLoad() = 0;
 	virtual void EndMapLoad() = 0;
-	virtual bool ProcessDataIntoCache(MDLHandle_t handle, MDLCacheDataType_t type, void* pData, int nDataSize, bool bAsync) = 0;
+	virtual void MarkAsLoaded(MDLHandle_t handle) = 0;
+	virtual void InitPreloadData(bool rebuild) = 0;
+	virtual void ShutdownPreloadData() = 0;
+	virtual bool IsDataLoaded(MDLHandle_t handle, MDLCacheDataType_t type) = 0;
+	virtual int* GetFrameUnlockCounterPtr(MDLCacheDataType_t type) = 0;
+	virtual void* LockStudioHdr(MDLHandle_t handle) = 0;
+	virtual void UnlockStudioHdr(MDLHandle_t handle) = 0;
+	virtual bool PreloadModel(MDLHandle_t handle) = 0;
+	virtual void ResetErrorModelStatus(MDLHandle_t handle) = 0;
+	virtual void MarkFrame() = 0;
+	virtual bool TouchAllData(MDLHandle_t handle) = 0;
 };
