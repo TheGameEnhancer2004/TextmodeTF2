@@ -8,7 +8,6 @@ class CCore
 {
 public:
 	void Load();
-	void Loop();
 	void Unload();
 
 	void AppendFailText(const char* sMessage, bool bCritical = false);
