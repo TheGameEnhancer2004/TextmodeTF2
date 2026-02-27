@@ -211,9 +211,7 @@ public:
 		{
 			// CDataCacheSection::Unlock CRASHFIX!
 			BytePatch("datacache.dll", "48 89 5C 24 18 48 89 7C 24 20 41 56 48 83 EC 20 F6 81 E0 00 00 00 04", 0x41, "90 90 90 90 90"),
-
-			// Fixes crash in datacache.dll+0xf2b3 (likely FindMDL or similar) 
-			BytePatch("datacache.dll", "4E 8B 44 C0 10 4D 85 C0 0F 84 80 00 00 00", 0x0, "45 31 C0 90 90 4D 85 C0 0F 84 80 00 00 00"),
+			BytePatch("datacache.dll", "4E 8B 44 C0 10 4D 85 C0 0F 84 ? ? ? ?", 0x0, "45 31 C0 90 90"),
 		}},
 		{"gameui",
 		{
