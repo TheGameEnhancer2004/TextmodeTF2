@@ -219,15 +219,6 @@ int CCore::LoadClient()
 	if (!U::BytePatches.Initialize("client"))
 		return LOAD_WAIT;
 
-	// IBaseClientDLL::FrameStageNotify
-	if (!G::IBaseClientDLL_FrameStageNotifyAddr)
-	{
-		if (auto pClient = U::Memory.FindInterface("client.dll", "VClient017"))
-			G::IBaseClientDLL_FrameStageNotifyAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(pClient, 35));
-	}
-	if (G::IBaseClientDLL_FrameStageNotifyAddr)
-		U::Hooks.Initialize("IBaseClientDLL_FrameStageNotify");
-
 	// IPanel::PaintTraverse
 	if (!G::IPanel_PaintTraverseAddr)
 	{
@@ -391,6 +382,9 @@ void CCore::Load()
 		
 		int iVPhysics = m_bVPhysicsLoaded ? 1 : LoadVPhysics();
 		CHECK(iVPhysics, "Failed to load vphysics")
+
+		if (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bGameUILoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded || !m_bVideoServicesLoaded || !m_bVPhysicsLoaded)
+			Sleep(10);
 	}
 	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bGameUILoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded || !m_bVideoServicesLoaded || !m_bVPhysicsLoaded);
 
@@ -399,17 +393,6 @@ void CCore::Load()
 	// Final verification log
 	SDK::Output("Core", "Initialization complete. All bytepatches and hooks applied.");
 
-}
-
-void CCore::Loop()
-{
-	while (true)
-	{
-		if (m_bUnload)
-			break;
-
-		Sleep(3600000);
-	}
 }
 
 void CCore::Unload()

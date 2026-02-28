@@ -37,7 +37,6 @@ namespace G
 inline uintptr_t SVC_GameEvent_ProcessAddr{};
 inline uintptr_t SVC_Sounds_ProcessAddr{};
 inline uintptr_t SVC_BSPDecal_ProcessAddr{};
-	inline uintptr_t IBaseClientDLL_FrameStageNotifyAddr{};
 	inline uintptr_t IPanel_PaintTraverseAddr{};
 	inline uintptr_t IStudioRender_DrawModelAddr{};
 	inline uintptr_t IStudioRender_DrawModelStaticPropAddr{};
