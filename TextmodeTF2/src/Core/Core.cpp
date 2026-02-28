@@ -219,15 +219,6 @@ int CCore::LoadClient()
 	if (!U::BytePatches.Initialize("client"))
 		return LOAD_WAIT;
 
-	// IBaseClientDLL::FrameStageNotify
-	if (!G::IBaseClientDLL_FrameStageNotifyAddr)
-	{
-		if (auto pClient = U::Memory.FindInterface("client.dll", "VClient017"))
-			G::IBaseClientDLL_FrameStageNotifyAddr = reinterpret_cast<uintptr_t>(U::Memory.GetVFunc(pClient, 35));
-	}
-	if (G::IBaseClientDLL_FrameStageNotifyAddr)
-		U::Hooks.Initialize("IBaseClientDLL_FrameStageNotify");
-
 	// IPanel::PaintTraverse
 	if (!G::IPanel_PaintTraverseAddr)
 	{
